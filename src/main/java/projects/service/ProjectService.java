@@ -25,6 +25,18 @@ public class ProjectService {
     public void addCategory(Integer projectId, String name) {
         projectDao.insertCategory(projectId, name);
     }
+    
+    public List<String> fetchMaterialsByProjectId(Integer projectId) {
+        return projectDao.fetchMaterialsByProjectId(projectId);
+    }
+
+    public List<String> fetchStepsByProjectId(Integer projectId) {
+        return projectDao.fetchStepsByProjectId(projectId);
+    }
+
+    public List<String> fetchCategoriesByProjectId(Integer projectId) {
+        return projectDao.fetchCategoriesByProjectId(projectId);
+    }
 
     public List<Project> fetchProjects() {
         return projectDao.fetchProjects();
