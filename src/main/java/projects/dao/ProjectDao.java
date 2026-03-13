@@ -32,7 +32,7 @@ public class ProjectDao {
             ResultSet rs = stmt.getGeneratedKeys();
             
             if(rs.next()) {
-            	project.setProjectId(rs.getInt(1));
+                project.setProjectId(rs.getInt(1));
             }
 
             return project;
@@ -206,6 +206,99 @@ public class ProjectDao {
 
                 linkStmt.executeUpdate();
             }
+
+        } catch(SQLException e) {
+            throw new DbException(e);
+        }
+    }
+
+    // ==============================
+    // NEW METHODS FOR SELECT PROJECT
+    // ==============================
+
+    public List<String> fetchMaterialsByProjectId(Integer projectId) {
+
+        String sql = "SELECT material_name, num_required, cost FROM material WHERE project_id = ?";
+
+        try(Connection conn = DbConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, projectId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            List<String> materials = new ArrayList<>();
+
+            while(rs.next()) {
+
+                String material =
+                    rs.getString("material_name") +
+                    " (Qty: " + rs.getInt("num_required") +
+                    ", Cost: " + rs.getBigDecimal("cost") + ")";
+
+                materials.add(material);
+            }
+
+            return materials;
+
+        } catch(SQLException e) {
+            throw new DbException(e);
+        }
+    }
+
+    public List<String> fetchStepsByProjectId(Integer projectId) {
+
+        String sql = "SELECT step_order, step_text FROM step WHERE project_id = ? ORDER BY step_order";
+
+        try(Connection conn = DbConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, projectId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            List<String> steps = new ArrayList<>();
+
+            while(rs.next()) {
+
+                String step =
+                    rs.getInt("step_order") + ". " +
+                    rs.getString("step_text");
+
+                steps.add(step);
+            }
+
+            return steps;
+
+        } catch(SQLException e) {
+            throw new DbException(e);
+        }
+    }
+
+    public List<String> fetchCategoriesByProjectId(Integer projectId) {
+
+        String sql = """
+            SELECT c.category_name
+            FROM category c
+            JOIN project_category pc ON c.category_id = pc.category_id
+            WHERE pc.project_id = ?
+            """;
+
+        try(Connection conn = DbConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, projectId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            List<String> categories = new ArrayList<>();
+
+            while(rs.next()) {
+
+                categories.add(rs.getString("category_name"));
+            }
+
+            return categories;
 
         } catch(SQLException e) {
             throw new DbException(e);
