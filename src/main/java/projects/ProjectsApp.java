@@ -162,16 +162,32 @@ public class ProjectsApp {
     
     //Select a specific project
     private void selectProject() {
-    	listProjects();
-    	Integer projectId = getIntInput("Enter a project ID to select a project");
-    	
-    	//Unselect current project
-    	curProject = null;
-    	
-    	//Throw exception if invalid project ID
-    	curProject = projectService.fetchProjectById(projectId);
-    	
-    	System.out.println("Selected project: " + curProject);
+
+        listProjects();
+
+        Integer projectId = getIntInput("Enter a project ID to select a project");
+
+        curProject = null;
+
+        // Fetch the project
+        curProject = projectService.fetchProjectById(projectId);
+
+        System.out.println("\nSelected project: " + curProject);
+
+        // Print Materials
+        System.out.println("\nMaterials:");
+        projectService.fetchMaterialsByProjectId(projectId)
+            .forEach(material -> System.out.println(material));
+
+        // Print Steps
+        System.out.println("\nSteps:");
+        projectService.fetchStepsByProjectId(projectId)
+            .forEach(step -> System.out.println(step));
+
+        // Print Categories
+        System.out.println("\nCategories:");
+        projectService.fetchCategoriesByProjectId(projectId)
+            .forEach(category -> System.out.println(category));
     }
 
     // Update project
@@ -225,7 +241,7 @@ public class ProjectsApp {
 
         printOperations();
 
-        Integer input = getIntInput("Enter a menu selection");
+        Integer input = getIntInput("\nEnter a menu selection");
 
         return Objects.isNull(input) ? -1 : input;
     }
@@ -261,5 +277,4 @@ public class ProjectsApp {
         operations.forEach(line -> System.out.println("  " + line));
     }
 }
-
 
