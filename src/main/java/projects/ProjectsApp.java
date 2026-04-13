@@ -53,7 +53,7 @@ public class ProjectsApp {
                 case 2:
                     listProjects();
                     break;
-                    
+
                 case 3:
                     selectProject();
                     break;
@@ -96,17 +96,17 @@ public class ProjectsApp {
         Project dbProject = projectService.addProject(project);
 
         System.out.println("You successfully created project: " + dbProject);
-        
+
         addMaterials(dbProject);
         addSteps(dbProject);
         addCategories(dbProject);
     }
-    
+
     private void addMaterials(Project project) {
 
         String add = getStringInput("Add materials to this project? (y/n)");
 
-        while(add != null && add.equalsIgnoreCase("y")) {
+        while (add != null && add.equalsIgnoreCase("y")) {
 
             String name = getStringInput("Enter material name");
             Integer qty = getIntInput("Enter quantity required");
@@ -117,14 +117,14 @@ public class ProjectsApp {
             add = getStringInput("Add another material? (y/n)");
         }
     }
-    
+
     private void addSteps(Project project) {
 
         String add = getStringInput("Add steps to this project? (y/n)");
 
         int order = 1;
 
-        while(add != null && add.equalsIgnoreCase("y")) {
+        while (add != null && add.equalsIgnoreCase("y")) {
 
             String text = getStringInput("Enter step description");
 
@@ -135,12 +135,12 @@ public class ProjectsApp {
             add = getStringInput("Add another step? (y/n)");
         }
     }
-    
+
     private void addCategories(Project project) {
 
         String add = getStringInput("Add categories to this project? (y/n)");
 
-        while(add != null && add.equalsIgnoreCase("y")) {
+        while (add != null && add.equalsIgnoreCase("y")) {
 
             String categoryName = getStringInput("Enter category name");
 
@@ -159,18 +159,19 @@ public class ProjectsApp {
             System.out.println(project);
         }
     }
-    
-    //Select a specific project
+
+    // Select a specific project
     private void selectProject() {
 
         listProjects();
 
         Integer projectId = getIntInput("Enter a project ID to select a project");
 
-        curProject = null;
-
-        // Fetch the project
         curProject = projectService.fetchProjectById(projectId);
+
+        if (Objects.isNull(curProject)) {
+            throw new DbException("Project ID " + projectId + " does not exist.");
+        }
 
         System.out.println("\nSelected project: " + curProject);
 
@@ -193,26 +194,61 @@ public class ProjectsApp {
     // Update project
     private void updateProject() {
 
-        Integer projectId = getIntInput("Enter the project ID to update");
+        if (Objects.isNull(curProject)) {
+            throw new DbException("You must select a project before updating.");
+        }
+
         String projectName = getStringInput("Enter the new project name");
+        BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours");
+        BigDecimal actualHours = getDecimalInput("Enter the actual hours");
+        Integer difficulty = getIntInput("Enter the project difficulty (1-5)");
+        String notes = getStringInput("Enter the project notes");
 
         Project project = new Project();
-        project.setProjectId(projectId);
+        project.setProjectId(curProject.getProjectId());
         project.setProjectName(projectName);
+        project.setEstimatedHours(estimatedHours);
+        project.setActualHours(actualHours);
+        project.setDifficulty(difficulty);
+        project.setNotes(notes);
 
         projectService.modifyProject(project);
 
         System.out.println("Project updated successfully.");
+
+        curProject = projectService.fetchProjectById(project.getProjectId());
     }
 
     // Delete project
     private void deleteProject() {
 
+        List<Project> projects = projectService.fetchProjects();
+
+        if (projects.isEmpty()) {
+            throw new DbException("No projects available to delete.");
+        }
+
+        projects.forEach(project -> System.out.println(project));
+
         Integer projectId = getIntInput("Enter the project ID to delete");
+
+        if (Objects.isNull(projectId)) {
+            throw new DbException("Project ID cannot be null.");
+        }
+
+        Project project = projectService.fetchProjectById(projectId);
+
+        if (Objects.isNull(project)) {
+            throw new DbException("Project ID " + projectId + " does not exist.");
+        }
 
         projectService.deleteProject(projectId);
 
         System.out.println("Project deleted successfully.");
+
+        if (curProject != null && curProject.getProjectId().equals(projectId)) {
+            curProject = null;
+        }
     }
 
     private BigDecimal getDecimalInput(String prompt) {
@@ -277,5 +313,3 @@ public class ProjectsApp {
         operations.forEach(line -> System.out.println("  " + line));
     }
 }
-
-
